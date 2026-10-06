@@ -2,7 +2,7 @@
 
 Projekt je postavený na ESP32 s ethernetovým modulem W5500 Lite a diferenciálním snímačem tlaku, který měří výšku vodního sloupce. Otestováno s komponentami uvedenými v sekci **Hardware**.
 
-Konfigurační YAML soubor najdete ve složce `conf`, fotografie hotového prototypu ve složce `foto`.
+Konfigurační YAML soubor najdete ve složce `sw`, fotografie hotového prototypu ve složce `foto`.
 
 ## Historie verzí
 
