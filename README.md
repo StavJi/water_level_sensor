@@ -27,9 +27,6 @@ Zde popsané zapojení je už třetí iterací:
 | **GPIO4**  | Relé **IN** | výstup | **HIGH = čerpadlo běží** |
 | **GPIO22** | Tlačítko | vstup | aktivní v **LOW** (tlačítko proti GND), nutný externí pull-up 10 kΩ |
 | **GPIO35** | Snímač hladiny – signál | analog. vstup | ADC1, útlum 12 dB → rozsah cca 0–3,1 V |
-| **3V3**    | W5500 VCC, pull-up tlačítka | napájení | |
-| **VIN (5V)** | Zdroj 5 V, relé VCC | napájení | |
-| **GND**    | společná zem všech modulů | | |
 
 ### Schéma zapojení
 
