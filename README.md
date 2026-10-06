@@ -16,7 +16,7 @@ Zde popsané zapojení je už třetí iterací:
 
 ### Zapojení
 
-TBD
+**TBD**
 
 ### BOM
 
@@ -27,7 +27,7 @@ TBD
 - 2× [tranzistor BC337](https://www.gme.cz/v/1485969/semtech-bc337-25-bipolarni-tranzistor)
 - 1× [kondenzátor 100 nF](https://www.gme.cz/v/1489676/hitano-ck-100n-50v-x7r-rm508-10-keramicky-kondenzator)
 - 1× [kondenzátor 470 µF / 35 V](https://www.gme.cz/v/1489656/hitano-ce-470u-35vit-hit-esx-10x20-rm5-bulk-elektrolyticky-kondenzator)
-- Rezistory (TBD hodnoty)
+- Rezistory **(TBD hodnoty)**
 - Svorky WAGO
   - 3× [oranžová](https://www.gme.cz/v/1499108/wago-256-746-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
   - 3× [světle šedá](https://www.gme.cz/v/1499111/wago-256-401-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
@@ -42,18 +42,20 @@ TBD
 - [AC/DC zdroj](https://www.gme.cz/v/1506306/mean-well-hdr-15-24-spinany-zdroj-na-din-listu) 230 V → 24 V. Při použití relé s jiným napětím cívky lze zvolit i 12V nebo 5V zdroj.
 - [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
 - [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
-- Voděodolná krabička (TBD typ)
+- Voděodolná krabička **(TBD typ)**
 
 ## Software
 
 1. V konfiguraci změňte IP adresu MQTT brokeru na svou a vyplňte přihlašovací údaje.
-2. Sestavte firmware podle [návodu ESPHome](https://esphome.io/guides/getting_started_command_line.html):
+2. Změna tvaru a velikosti nádrže:
+  - **TBD**
+3. Sestavte firmware podle [návodu ESPHome](https://esphome.io/guides/getting_started_command_line.html):
 
 ```sh
    make compile
 ```
 
-3. Nahrajte firmware do desky:
+4. Nahrajte firmware do desky:
 
 ```sh
    make upload
