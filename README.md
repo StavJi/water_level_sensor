@@ -14,9 +14,101 @@ Zde popsané zapojení je už třetí iterací:
 
 ## Hardware
 
-### Zapojení
+### Přehled pinů
 
-**TBD**
+| GPIO ESP32 | Připojeno k | Směr | Poznámka |
+|-----------:|-------------|------|----------|
+| **GPIO18** | W5500 **SCLK** | výstup | SPI hodiny (8 MHz) |
+| **GPIO23** | W5500 **MOSI** | výstup | SPI data ESP → W5500 |
+| **GPIO19** | W5500 **MISO** | vstup | SPI data W5500 → ESP |
+| **GPIO33** | W5500 **CS / SCS** | výstup | chip select |
+| **GPIO27** | W5500 **INT** | vstup | přerušení |
+| **GPIO16** | W5500 **RST** | výstup | reset modulu |
+| **GPIO4**  | Relé **IN** | výstup | **HIGH = čerpadlo běží** |
+| **GPIO22** | Tlačítko | vstup | aktivní v **LOW** (tlačítko proti GND), nutný externí pull-up 10 kΩ |
+| **GPIO35** | Snímač hladiny – signál | analog. vstup | ADC1, útlum 12 dB → rozsah cca 0–3,1 V |
+| **3V3**    | W5500 VCC, pull-up tlačítka | napájení | |
+| **VIN (5V)** | Zdroj 5 V, relé VCC | napájení | |
+| **GND**    | společná zem všech modulů | | |
+
+### Schéma zapojení
+
+```mermaid
+flowchart LR
+    PSU["Zdroj 5 V"]
+
+    subgraph ESP["ESP32 DevKit"]
+        VIN["VIN 5V"]
+        V33["3V3"]
+        G18["GPIO18"]
+        G23["GPIO23"]
+        G19["GPIO19"]
+        G33["GPIO33"]
+        G27["GPIO27"]
+        G16["GPIO16"]
+        G4["GPIO4"]
+        G22["GPIO22"]
+        G35["GPIO35 (ADC)"]
+        GND["GND"]
+    end
+
+    subgraph ETH["W5500"]
+        E_VCC["VCC 3.3V"]
+        E_SCK["SCLK"]
+        E_MOSI["MOSI"]
+        E_MISO["MISO"]
+        E_CS["CS"]
+        E_INT["INT"]
+        E_RST["RST"]
+        E_GND["GND"]
+    end
+
+    subgraph REL["Relé modul"]
+        R_VCC["VCC"]
+        R_IN["IN"]
+        R_GND["GND"]
+        R_COM["COM / NO"]
+    end
+
+    BTN["Tlačítko<br/>(druhý pól na GND)<br/>+ 10k pull-up na 3V3"]
+    LVL["Snímač hladiny<br/>signál 0–3,1 V"]
+    PUMP["Čerpadlo 230 V"]
+
+    PSU --> VIN
+    PSU --> R_VCC
+    V33 --> E_VCC
+    G18 --> E_SCK
+    G23 --> E_MOSI
+    E_MISO --> G19
+    G33 --> E_CS
+    E_INT --> G27
+    G16 --> E_RST
+    G4 --> R_IN
+    R_COM -->|"spíná fázi L"| PUMP
+    BTN --> G22
+    LVL --> G35
+    GND --- E_GND
+    GND --- R_GND
+```
+#### Tlačítko (GPIO22)
+
+```
+3V3 ──[ 10 kΩ ]──┬──── GPIO22
+                 │
+              [ TL ]   (spínací tlačítko)
+                 │
+GND ─────────────┘
+```
+
+#### Snímač hladiny (GPIO35)
+
+```
+Sonda OUT ──[ R1 ]──┬──── GPIO35
+                    │
+                  [ R2 ]   ║ 100 nF
+                    │      ║
+GND ────────────────┴──────╨──── GND sondy
+```
 
 ### BOM
 
@@ -43,20 +135,32 @@ Zde popsané zapojení je už třetí iterací:
 - [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
 - [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
 - Voděodolná krabička **(TBD typ)**
+  
+## MQTT
+| Topic | Směr | Payload | Význam |
+|-------|------|---------|--------|
+| `zavlaha/cerpadlo/set` | → ESP | `ON` / `OFF` | zapnutí / vypnutí čerpadla |
+| `zavlaha/cerpadlo/state` | ESP → | `ON` / `OFF` | aktuální stav (posílá se i po restartu) |
+| `zavlaha/log` | ESP → | text | log zařízení |
+| `zavlaha/sensor/...` | ESP → | číslo | hodnoty senzorů (hladina, objem, napětí) |
 
-## Software
+## Nahrání firmwaru
+Obecný popis [zde](https://esphome.io/guides/getting_started_command_line.html).
 
-1. V konfiguraci změňte IP adresu MQTT brokeru na svou a vyplňte přihlašovací údaje.
-2. Změna tvaru a velikosti nádrže:
-  - **TBD**
-3. Sestavte firmware podle [návodu ESPHome](https://esphome.io/guides/getting_started_command_line.html):
+1. Vytvořte `secrets.yaml` vedle `zavlaha.yaml`:
 
-```sh
-   make compile
-```
+   ```yaml
+   api_key: "BASE64_KLIC_32_BAJTU"
+   ota_password: "heslo_ota"
+   mqtt_user: "uzivatel"
+   mqtt_password: "heslo"
+   ```
+2. Změňte IP adresu MQTT brokeru na svoji.
+3. Modifikujte přepočet výšky hladiny na objem podle typu nádrže.
+4. První nahrání přes USB:
 
-4. Nahrajte firmware do desky:
+   ```bash
+   esphome run zavlaha.yaml
+   ```
 
-```sh
-   make upload
-```
+5. Další aktualizace už přes síť (OTA).
