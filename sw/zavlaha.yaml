@@ -1,0 +1,184 @@
+esphome:
+  name: zavlaha
+  friendly_name: Zavlaha
+  on_boot:  # Send data after restart
+    then:
+      - mqtt.publish:
+          topic: zavlaha/cerpadlo/state
+          payload: !lambda |-
+            return id(cerpadlo).state ? "ON" : "OFF";
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+  cs_pin: GPIO33
+  interrupt_pin: GPIO27
+  reset_pin: GPIO16
+  clock_speed: 8MHz
+
+  
+
+mqtt:
+  broker: 192.168.0.177 # IP of MQTT broker
+  port: 1883
+  username: !secret mqtt_user
+  password: !secret mqtt_password
+  topic_prefix: zavlaha
+  discovery: false
+  log_topic: zavlaha/log
+  on_message:
+    - topic: zavlaha/cerpadlo/set
+      payload: "ON"
+      then:
+        - if:
+            condition:
+              lambda: 'return id(hladina_vody).has_state() && id(hladina_vody).state > 17.0;'
+            then:
+              - switch.turn_on: cerpadlo
+            else:
+              - logger.log: "Nízká hladina! MQTT zapnutí zablokováno."
+
+    - topic: zavlaha/cerpadlo/set
+      payload: "OFF"
+      then:
+        - switch.turn_off: cerpadlo
+        
+# Munualni ovladani cerpadla
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO22
+      mode: INPUT
+      inverted: true
+    name: "Munualni ovladani"
+    id: manualni_ovladani
+    filters:
+      - delayed_on: 10ms # Debounce
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - script.execute: check_button_hold
+
+# Spinani cerpadla
+switch:
+  - platform: gpio
+    pin: GPIO4
+    name: "Cerpadlo"
+    id: cerpadlo
+    inverted: false
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - mqtt.publish:
+          topic: zavlaha/cerpadlo/state
+          payload: "ON"
+    on_turn_off:
+      - mqtt.publish:
+          topic: zavlaha/cerpadlo/state
+          payload: "OFF"
+
+# Ochrana cerpadla proti suchemu behu
+interval:
+  - interval: 5s
+    then:
+    - if:
+        condition:
+          lambda: |-
+            return id(hladina_vody).has_state() &&
+                  id(hladina_vody).state < 15.0 &&
+                  id(cerpadlo).state;
+        then:
+          - logger.log: "Nízká hladina! Vypínám čerpadlo."
+          - switch.turn_off: cerpadlo
+
+sensor:
+# Mereni hladiny vody ve voltech
+  - platform: adc
+    pin: GPIO35
+    name: "Retencni nadoba napeti"
+    id: hladina_adc_voltage
+    attenuation: 12db
+    update_interval: 15s
+    unit_of_measurement: "mV"
+    filters:
+      - multiply: 1000
+      - sliding_window_moving_average:
+          window_size: 4
+          send_every: 1
+
+# Hladina vody na vysku v centimetrech
+  - platform: template
+    name: "Retencni nadoba hladina"
+    id: hladina_vody
+    unit_of_measurement: "cm"
+    icon: mdi:ruler
+    accuracy_decimals: 1
+    update_interval: 15s
+    lambda: |-
+      if (id(hladina_adc_voltage).has_state()) {
+        return id(hladina_adc_voltage).state * 0.09090909090;
+      } else {
+        return NAN;
+      }
+
+# Mereni hladiny vody na objem v litrech
+  - platform: template
+    name: "Retencni nadoba objem"
+    id: objem_vody
+    unit_of_measurement: "l"
+    icon: "mdi:water"
+    accuracy_decimals: 0
+    update_interval: 20s
+    lambda: |-
+      // Read water level from a separate sensor (in cm), convert to meters
+      float h_cm = id(hladina_vody).state;
+      float h = h_cm / 100.0;
+
+      // Tank geometry
+      const float r = 0.85; // radius in meters
+      const float L = 2.2;  // length in meters
+
+      // Basic validation
+      if (h > 0.0 && h < 2*r) {
+        float theta = acos((r - h) / r);
+        float segment_area = (r * r * theta) - ((r - h) * sqrt(2 * r * h - h * h));
+        float volume_liters = segment_area * L * 1000.0;
+        return roundf(volume_liters);
+      } else if (h >= 2 * r) {
+        // Full tank
+        float volume_liters = M_PI * r * r * L * 1000.0;
+        return roundf(volume_liters);
+      } else {
+        return 0;
+      }
+
+# It is needed to hold button for 500 ms to toggle pump
+script:
+  - id: check_button_hold
+    mode: restart
+    then:
+      - delay: 500ms
+      - if:
+          condition:
+            lambda: 'return id(hladina_vody).has_state() && id(hladina_vody).state > 17.0;'
+          then:
+            - switch.toggle: cerpadlo
+          else:
+            - logger.log: "Nízká hladina"
