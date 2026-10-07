@@ -60,7 +60,7 @@ flowchart LR
         E_GND["GND"]
     end
 
-    subgraph REL["Relé modul"]
+    subgraph REL["Relé"]
         R_VCC["VCC"]
         R_IN["IN"]
         R_GND["GND"]
@@ -90,9 +90,9 @@ flowchart LR
 #### Tlačítko (GPIO22)
 
 ```
-3V3 ──[ 10 kΩ ]──┬──── GPIO22
+3V3 ──[ 10 kΩ ]──┬────────── GPIO22
                  │
-              [ TL ]   (spínací tlačítko)
+              [ TL ] (spínací tlačítko)
                  │
 GND ─────────────┘
 ```
@@ -100,11 +100,11 @@ GND ─────────────┘
 #### Snímač hladiny (GPIO35)
 
 ```
-Sonda OUT ──[ R1 ]──┬──── GPIO35
-                    │
-                  [ R2 ]   ║ 100 nF
-                    │      ║
-GND ────────────────┴──────╨──── GND sondy
+Snímaš OUT ──[ R1 ]──┬───────┬────────── GPIO35
+                     │       │
+                   [ R2 ]   === 100 nF
+                     │       │
+GND ─────────────────┴───────┴────────── GND sondy
 ```
 
 ### BOM
@@ -127,8 +127,8 @@ GND ────────────────┴──────╨─�
   - 1× [bočnice modrá](https://www.gme.cz/v/1501452/wago-256-400-bocnice-pro-256-modra)
   - 1× [bočnice tmavě šedá](https://www.gme.cz/v/1501440/wago-236-200-bocnice-pro-236-tmave-seda)
 - Voděodolná zásuvka – [KV Elektro](https://www.kvelektro.cz/zasuvka-scame-protecta-ip66-137-4411-do-sestav-bez-krabice-p1236195) nebo [Alza](https://www.alza.cz/hobby/solight-zasuvka-ip66-vodotesna-a-prachotesna-d12895804.htm)
-- [Relé](https://www.gme.cz/v/1502113/finder-405290240000-rele-civka-24vdc-kontakt-250vac-8a-2x-prepinaci) s [paticí](https://www.gme.cz/v/1498684/finder-9505-patice-pro-rele-4051-52-61-na-din-listu) na DIN lištu
-- [AC/DC zdroj](https://www.gme.cz/v/1506306/mean-well-hdr-15-24-spinany-zdroj-na-din-listu) 230 V → 24 V. Při použití relé s jiným napětím cívky lze zvolit i 12V nebo 5V zdroj.
+- [Relé](https://www.gme.cz/v/1515853/finder-406190054000-rele-civka-5vdc-kontakt-250vac-16a-1x-prepinaci) s [paticí](https://www.gme.cz/v/1498684/finder-9505-patice-pro-rele-4051-52-61-na-din-listu) na DIN lištu
+- [AC/DC zdroj](https://www.gme.cz/v/1507451/mean-well-hdr-15-5-spinany-zdroj-na-din-listu) 230 V → 5 V. Při použití relé s jiným napětím cívky lze zvolit i jiná napětí zdroje.
 - [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
 - [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
 - Voděodolná krabička **(TBD typ)**
@@ -153,11 +153,41 @@ Obecný popis [zde](https://esphome.io/guides/getting_started_command_line.html)
    mqtt_password: "heslo"
    ```
 2. Změňte IP adresu MQTT brokeru na svoji.
-3. Modifikujte přepočet výšky hladiny na objem podle typu nádrže.
-4. První nahrání přes USB:
+
+   ```yaml
+   broker: <Vaše IP MQTT brokeru>
+   ```
+4. Modifikujte přepočet výšky hladiny na objem podle typu nádrže.  
+   V mém konkrétním případě je počítáno s válcovou nádrží naležato o objemu 5000 litrů, průměrem 1.8 metru a délkou 2.2 metru.
+   
+   ```yaml
+   lambda: |-
+  // Read water level from a separate sensor (in cm), convert to meters
+  float h_cm = id(hladina_vody).state;
+  float h = h_cm / 100.0;
+
+  // Tank geometry
+  const float r = 0.85; // radius in meters
+  const float L = 2.2;  // length in meters
+
+  // Basic validation
+  if (h > 0.0 && h < 2*r) {
+    float theta = acos((r - h) / r);
+    float segment_area = (r * r * theta) - ((r - h) * sqrt(2 * r * h - h * h));
+    float volume_liters = segment_area * L * 1000.0;
+    return roundf(volume_liters);
+  } else if (h >= 2 * r) {
+    // Full tank
+    float volume_liters = M_PI * r * r * L * 1000.0;
+    return roundf(volume_liters);
+  } else {
+    return 0;
+  }
+   ```
+6. První nahrání přes USB:
 
    ```bash
    esphome run zavlaha.yaml
    ```
 
-5. Další aktualizace už přes síť (OTA).
+7. Další aktualizace už přes síť (OTA).
