@@ -160,30 +160,30 @@ Obecný popis [zde](https://esphome.io/guides/getting_started_command_line.html)
 4. Modifikujte přepočet výšky hladiny na objem podle typu nádrže.  
    V mém konkrétním případě je počítáno s válcovou nádrží naležato o objemu 5000 litrů, průměrem 1.8 metru a délkou 2.2 metru.
    
-   ```yaml
-   lambda: |-
-  // Read water level from a separate sensor (in cm), convert to meters
-  float h_cm = id(hladina_vody).state;
-  float h = h_cm / 100.0;
-
-  // Tank geometry
-  const float r = 0.85; // radius in meters
-  const float L = 2.2;  // length in meters
-
-  // Basic validation
-  if (h > 0.0 && h < 2*r) {
-    float theta = acos((r - h) / r);
-    float segment_area = (r * r * theta) - ((r - h) * sqrt(2 * r * h - h * h));
-    float volume_liters = segment_area * L * 1000.0;
-    return roundf(volume_liters);
-  } else if (h >= 2 * r) {
-    // Full tank
-    float volume_liters = M_PI * r * r * L * 1000.0;
-    return roundf(volume_liters);
-  } else {
-    return 0;
-  }
-   ```
+      ```yaml
+      lambda: |-
+      // Read water level from a separate sensor (in cm), convert to meters
+      float h_cm = id(hladina_vody).state;
+      float h = h_cm / 100.0;
+    
+      // Tank geometry
+      const float r = 0.85; // radius in meters
+      const float L = 2.2;  // length in meters
+    
+      // Basic validation
+      if (h > 0.0 && h < 2*r) {
+        float theta = acos((r - h) / r);
+        float segment_area = (r * r * theta) - ((r - h) * sqrt(2 * r * h - h * h));
+        float volume_liters = segment_area * L * 1000.0;
+        return roundf(volume_liters);
+      } else if (h >= 2 * r) {
+        // Full tank
+        float volume_liters = M_PI * r * r * L * 1000.0;
+        return roundf(volume_liters);
+      } else {
+        return 0;
+      }
+      ```
 6. První nahrání přes USB:
 
    ```bash
