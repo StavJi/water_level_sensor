@@ -90,11 +90,11 @@ flowchart LR
 #### Tlačítko (GPIO22)
 
 ```
-3V3 ──[ 10 kΩ ]──┬────────── GPIO22
-                 │
-              [ TL ] (spínací tlačítko)
-                 │
-GND ─────────────┘
+3V3 ──[ 2.2 kΩ ]──┬────────── GPIO22
+                  │
+                [ TL ] (spínací tlačítko)
+                  │
+GND ──────────────┘
 ```
 
 #### Snímač hladiny (GPIO35)
@@ -107,12 +107,23 @@ Snímaš OUT ──[ R1 ]──┬───────┬───────�
 GND ─────────────────┴───────┴────────── GND sondy
 ```
 
+#### Spínání relé (GPIO4)
+
+```
+GPIO4 ──[ 2.2 kΩ ]──┬──────────────── báze tranzistoru BC337
+                    │      
+                [ 2.2 kΩ ]   
+                    │      
+GND ────────────────┴──────────────── emitor tranzistoru BC337
+```
+
 ### BOM
 
 - [ESP32](https://www.laskakit.cz/laskakit-esp32-devkit/?variantId=11481)
 - [Ethernetový modul W5500](https://www.laskakit.cz/mikro-ethernet-modul-w5500/)
 - [DC/DC měnič s LM2596](https://www.laskakit.cz/step-down-menic-s-lm2596/)
 - 2× [dioda 1N4148](https://www.gme.cz/v/1487018/semtech-1n4148-dioda)
+- 1x [dioda 1N4007](https://www.gme.cz/v/1493670/1n4007-dioda)
 - 2× [tranzistor BC337](https://www.gme.cz/v/1485969/semtech-bc337-25-bipolarni-tranzistor)
 - 1× [kondenzátor 100 nF](https://www.gme.cz/v/1489676/hitano-ck-100n-50v-x7r-rm508-10-keramicky-kondenzator)
 - 1× [kondenzátor 470 µF / 35 V](https://www.gme.cz/v/1489656/hitano-ce-470u-35vit-hit-esx-10x20-rm5-bulk-elektrolyticky-kondenzator)
@@ -128,10 +139,9 @@ GND ─────────────────┴───────�
   - 1× [bočnice tmavě šedá](https://www.gme.cz/v/1501440/wago-236-200-bocnice-pro-236-tmave-seda)
 - Voděodolná zásuvka – [KV Elektro](https://www.kvelektro.cz/zasuvka-scame-protecta-ip66-137-4411-do-sestav-bez-krabice-p1236195) nebo [Alza](https://www.alza.cz/hobby/solight-zasuvka-ip66-vodotesna-a-prachotesna-d12895804.htm)
 - [Relé](https://www.gme.cz/v/1515853/finder-406190054000-rele-civka-5vdc-kontakt-250vac-16a-1x-prepinaci) s [paticí](https://www.gme.cz/v/1498684/finder-9505-patice-pro-rele-4051-52-61-na-din-listu) na DIN lištu
-- [AC/DC zdroj](https://www.gme.cz/v/1507451/mean-well-hdr-15-5-spinany-zdroj-na-din-listu) 230 V → 5 V. Při použití relé s jiným napětím cívky lze zvolit i jiná napětí zdroje.
 - [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
 - [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
-- Voděodolná krabička **(TBD typ)**
+- Voděodolná krabička
   
 ## MQTT
 | Topic | Směr | Payload | Význam |
