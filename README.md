@@ -33,17 +33,19 @@ Zde popsané zapojení je už třetí iterací:
 #### Vstupní napájení
 
 ```
-VCC IN ──────┬────── VCC OUT
-             │
-            === C1
-             │  470 uF
-GND IN ──────┴────── GND OUT
+                    ┌───────────────┐
+VCC IN ──────┬──────┤ IN        OUT ├────── +5 V
+             │ +    │   DC/DC 5 V   │
+            === C1  │               │
+             │      │      GND      │
+             │      └───────┬───────┘
+GND ─────────┴──────────────┴────────────── GND
 ```
 
 #### Tlačítko (GPIO22)
 
 ```
-                 +3V3
+                 +3V3 (z LDO ESP32 modulu)
                    │
                [ 2.2 kΩ ]  R1
                    │             R2
@@ -57,7 +59,7 @@ GND  ─────────────────────────
 #### Snímač hladiny (GPIO35)
 
 ```
-                             +3V3
+                             +3V3 (z LDO ESP32 modulu)
                                │
                              ──┴── K
                                ▲    D2 1N4148
@@ -79,7 +81,7 @@ GND ─────────────────┴───────�
                    ┌─────────┴─────────┐
                    │                   │
                  ──┴── K             ┌─┴─┐
-                   ▲    D4 1N4007    │   │  cívka relé
+                   ▲    D4 1N4007    │   │  RE1 (cívka relé)
                    │   A             │   │
                    │                 └─┬─┘
                    └─────────┬─────────┘
@@ -95,15 +97,20 @@ GND ────────────────┴────────�
 
 ### BOM
 
-- [ESP32](https://www.laskakit.cz/laskakit-esp32-devkit/?variantId=11481)
-- [Ethernetový modul W5500](https://www.laskakit.cz/mikro-ethernet-modul-w5500/)
-- [DC/DC měnič s LM2596](https://www.laskakit.cz/step-down-menic-s-lm2596/)
-- 2× [dioda 1N4148](https://www.gme.cz/v/1487018/semtech-1n4148-dioda)
-- 1x [dioda 1N4007](https://www.gme.cz/v/1493670/1n4007-dioda)
-- 2× [tranzistor BC337](https://www.gme.cz/v/1485969/semtech-bc337-25-bipolarni-tranzistor)
-- 1× [kondenzátor 100 nF](https://www.gme.cz/v/1489676/hitano-ck-100n-50v-x7r-rm508-10-keramicky-kondenzator)
-- 1× [kondenzátor 470 µF / 35 V](https://www.gme.cz/v/1489656/hitano-ce-470u-35vit-hit-esx-10x20-rm5-bulk-elektrolyticky-kondenzator)
-- Rezistory **(TBD hodnoty)**
+- 1x [ESP32](https://www.laskakit.cz/laskakit-esp32-devkit/?variantId=11481)
+- 1x [Ethernetový modul W5500](https://www.laskakit.cz/mikro-ethernet-modul-w5500/)
+- 1x [DC/DC měnič s LM2596](https://www.laskakit.cz/step-down-menic-s-lm2596/)
+- 2× D2, D3 [dioda 1N4148](https://www.gme.cz/v/1487018/semtech-1n4148-dioda)
+- 1x D4 [dioda 1N4007](https://www.gme.cz/v/1493670/1n4007-dioda)
+- 1x D1 [TVS](https://cz.mouser.com/cs/ProductDetail/Nexperia/PESD3V3S1UL315?qs=LOCUfHb8d9vQ9koc%252Bm8kRA%3D%3D)
+- 2× T1 [tranzistor BC337](https://www.gme.cz/v/1485969/semtech-bc337-25-bipolarni-tranzistor)
+- 1× C2 [kondenzátor 100 nF](https://www.gme.cz/v/1489676/hitano-ck-100n-50v-x7r-rm508-10-keramicky-kondenzator)
+- 1× C1 [kondenzátor 470 µF / 35 V](https://www.gme.cz/v/1489656/hitano-ce-470u-35vit-hit-esx-10x20-rm5-bulk-elektrolyticky-kondenzator)
+- Rezistory
+   - 3x R5, R6, R1 2.2 kΩ [Rezistor](https://www.gme.cz/v/1487405/gym-cym-rm-2k2-06w-1-0207-metalizovany-rezistor)
+   - 1x R2 1 kΩ [Rezistor](https://www.gme.cz/v/1486228/gym-cym-rm-1k-06w-1-0207-metalizovany-rezistor)
+   - 1x R3 **TBD**
+   - 1x R4 **TBD**
 - Svorky WAGO
   - 3× [oranžová](https://www.gme.cz/v/1499108/wago-256-746-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
   - 3× [světle šedá](https://www.gme.cz/v/1499111/wago-256-401-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
@@ -114,10 +121,10 @@ GND ────────────────┴────────�
   - 1× [bočnice modrá](https://www.gme.cz/v/1501452/wago-256-400-bocnice-pro-256-modra)
   - 1× [bočnice tmavě šedá](https://www.gme.cz/v/1501440/wago-236-200-bocnice-pro-236-tmave-seda)
 - Voděodolná zásuvka – [KV Elektro](https://www.kvelektro.cz/zasuvka-scame-protecta-ip66-137-4411-do-sestav-bez-krabice-p1236195) nebo [Alza](https://www.alza.cz/hobby/solight-zasuvka-ip66-vodotesna-a-prachotesna-d12895804.htm)
-- [Relé](https://www.gme.cz/v/1515853/finder-406190054000-rele-civka-5vdc-kontakt-250vac-16a-1x-prepinaci) s [paticí](https://www.gme.cz/v/1498684/finder-9505-patice-pro-rele-4051-52-61-na-din-listu) na DIN lištu
-- [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
-- [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
-- Voděodolná krabička
+- 1x RE1 [Relé](https://www.gme.cz/v/1515853/finder-406190054000-rele-civka-5vdc-kontakt-250vac-16a-1x-prepinaci) je možné zapájet přímo do DPS nebo jako v mém případě použít [patici](https://www.gme.cz/v/1498684/finder-9505-patice-pro-rele-4051-52-61-na-din-listu) na DIN lištu
+- 1x [Snímač hladiny vody](https://allegro.cz/produkt/fotoelektricky-snimac-hladiny-kapaliny-4-20ma-ip68-ponorny-5d731506-9f41-4c8e-a7c2-fc99b2056e58?offerId=18372650584) – snímačů existuje celá řada, na AliExpressu je najdete pod heslem **Liquid Level Transmitter**. Já používám verzi s napájením 5 V a napěťovým výstupem (0–3.3) V, který odpovídá výšce hladiny (0–3) m. Napájecí napětí snímače 5 V jsem historicky zvolil kvůli napájení z baterie. S vyšším napájecím napětí (24 V) rapidně roste množství snímáčů ze kterých lze vybírat.
+- 1x [Univerzální DPS 160 × 100 mm](https://www.gme.cz/v/1508180/rademacher-up830ep-univerzalni-spoj-160x100mm)
+- 1x Voděodolná krabička
   
 ## MQTT
 | Topic | Směr | Payload | Význam |
