@@ -30,71 +30,28 @@ Zde popsané zapojení je už třetí iterací:
 
 ### Schéma zapojení
 
-```mermaid
-flowchart LR
-    PSU["Zdroj 5 V"]
+#### Vstupní napájení
 
-    subgraph ESP["ESP32 DevKit"]
-        VIN["VIN 5V"]
-        V33["3V3"]
-        G18["GPIO18"]
-        G23["GPIO23"]
-        G19["GPIO19"]
-        G33["GPIO33"]
-        G27["GPIO27"]
-        G16["GPIO16"]
-        G4["GPIO4"]
-        G22["GPIO22"]
-        G35["GPIO35 (ADC)"]
-        GND["GND"]
-    end
-
-    subgraph ETH["W5500"]
-        E_VCC["VCC 3.3V"]
-        E_SCK["SCLK"]
-        E_MOSI["MOSI"]
-        E_MISO["MISO"]
-        E_CS["CS"]
-        E_INT["INT"]
-        E_RST["RST"]
-        E_GND["GND"]
-    end
-
-    subgraph REL["Relé"]
-        R_VCC["VCC"]
-        R_IN["IN"]
-        R_GND["GND"]
-        R_COM["COM / NO"]
-    end
-
-    BTN["Tlačítko<br/>(druhý pól na GND)<br/>+ 10k pull-up na 3V3"]
-    LVL["Snímač hladiny<br/>signál 0–3,1 V"]
-    PUMP["Čerpadlo 230 V"]
-
-    PSU --> VIN
-    PSU --> R_VCC
-    V33 --> E_VCC
-    G18 --> E_SCK
-    G23 --> E_MOSI
-    E_MISO --> G19
-    G33 --> E_CS
-    E_INT --> G27
-    G16 --> E_RST
-    G4 --> R_IN
-    R_COM -->|"spíná fázi L"| PUMP
-    BTN --> G22
-    LVL --> G35
-    GND --- E_GND
-    GND --- R_GND
 ```
+VCC IN ──────┬────── VCC OUT
+             │
+            === C1
+             │  470 uF
+GND IN ──────┴────── GND OUT
+```
+
 #### Tlačítko (GPIO22)
 
 ```
-3V3 ──[ 2.2 kΩ ]──┬────────── GPIO22
-                  │
-                [ TL ] (spínací tlačítko)
-                  │
-GND ──────────────┘
+                 +3V3
+                   │
+               [ 2.2 kΩ ]  R1
+                   │             R2
+Tlačítko ──────────┴─────[ 1 kΩ ]────┬────────────────── GPIO22
+                                     │       │
+                               D1 [ TVS ]   === C2
+                                     │       │  100 nF
+GND  ────────────────────────────────┴───────┴────────── GND
 ```
 
 #### Snímač hladiny (GPIO35)
@@ -103,13 +60,13 @@ GND ──────────────┘
                              +3V3
                                │
                              ──┴── K
-                               ▲    D1 1N4148
+                               ▲    D2 1N4148
                                │   A
-Snímač OUT ──[ R1 ]──┬─────────┼──────────────── GPIO35
+Snímač ──────[ R3 ]──┬─────────┼──────────────── GPIO35
+hladiny vody         │         │
                      │         │
-                     │         │
-                   [ R2 ]    ──┴── K
-                     │         ▲    D2 1N4148
+                   [ R4 ]    ──┴── K
+                     │         ▲    D3 1N4148
                      │         │   A
 GND ─────────────────┴─────────┴──────────────── GND sondy
 ```
@@ -122,16 +79,16 @@ GND ─────────────────┴───────�
                    ┌─────────┴─────────┐
                    │                   │
                  ──┴── K             ┌─┴─┐
-                   ▲    D1 1N4007    │   │  cívka relé
+                   ▲    D4 1N4007    │   │  cívka relé
                    │   A             │   │
                    │                 └─┬─┘
                    └─────────┬─────────┘
                              │
                              │ C (kolektor)
-                           │╱
-GPIO4 ──[ 2.2 kΩ ]──┬──────┤   Q1 BC337 (NPN)
+        R5                 │╱
+GPIO4 ──[ 2.2 kΩ ]──┬──────┤   T1 BC337 (NPN)
                     │      │↘
-                [ 2.2 kΩ ]   │ E (emitor)
+             R6 [ 2.2 kΩ ]   │ E (emitor)
                     │        │
 GND ────────────────┴────────┴
 ```
