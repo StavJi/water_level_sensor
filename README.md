@@ -59,18 +59,18 @@ GND  ─────────────────────────
 #### Snímač hladiny (GPIO35)
 
 ```
-                             +3V3 (z LDO ESP32 modulu)
-                               │
-                             ──┴── K
-                               ▲    D2 1N4148
-                               │   A
-Snímač ──────[ R3 ]──┬─────────┼──────────────── GPIO35
-hladiny vody         │         │
-                     │         │
-                   [ R4 ]    ──┴── K
-                     │         ▲    D3 1N4148
-                     │         │   A
-GND ─────────────────┴─────────┴──────────────── GND sondy
+                         +3V3 (z LDO ESP32 modulu)
+                           │
+                         ──┴── K
+                           ▲    D2 1N4148
+                    R3     │   A
+Snímač ──────[ 1 kΩ ]──────┼──────────────── GPIO35
+hladiny vody               │
+                           │
+                         ──┴── K
+                           ▲    D3 1N4148
+                           │   A
+GND ───────────────────────┴──────────────── GND sondy
 ```
 
 #### Spínání relé (GPIO4)
@@ -87,10 +87,10 @@ GND ─────────────────┴───────�
                    └─────────┬─────────┘
                              │
                              │ C (kolektor)
-        R5                 │╱
+        R4                 │╱
 GPIO4 ──[ 2.2 kΩ ]──┬──────┤   T1 BC337 (NPN)
                     │      │↘
-             R6 [ 2.2 kΩ ]   │ E (emitor)
+             R5 [ 2.2 kΩ ]   │ E (emitor)
                     │        │
 GND ────────────────┴────────┴
 ```
@@ -107,10 +107,8 @@ GND ────────────────┴────────�
 - 1× C2 [kondenzátor 100 nF](https://www.gme.cz/v/1489676/hitano-ck-100n-50v-x7r-rm508-10-keramicky-kondenzator)
 - 1× C1 [kondenzátor 470 µF / 35 V](https://www.gme.cz/v/1489656/hitano-ce-470u-35vit-hit-esx-10x20-rm5-bulk-elektrolyticky-kondenzator)
 - Rezistory
-   - 3x R5, R6, R1 2.2 kΩ [Rezistor](https://www.gme.cz/v/1487405/gym-cym-rm-2k2-06w-1-0207-metalizovany-rezistor)
-   - 1x R2 1 kΩ [Rezistor](https://www.gme.cz/v/1486228/gym-cym-rm-1k-06w-1-0207-metalizovany-rezistor)
-   - 1x R3 **TBD**
-   - 1x R4 **TBD**
+   - 3x R4, R5, R1 2.2 kΩ [Rezistor](https://www.gme.cz/v/1487405/gym-cym-rm-2k2-06w-1-0207-metalizovany-rezistor)
+   - 1x R2, R3 1 kΩ [Rezistor](https://www.gme.cz/v/1486228/gym-cym-rm-1k-06w-1-0207-metalizovany-rezistor)
 - Svorky WAGO
   - 3× [oranžová](https://www.gme.cz/v/1499108/wago-256-746-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
   - 3× [světle šedá](https://www.gme.cz/v/1499111/wago-256-401-svorkovnice-1pol-roztec-508mm-24a-320v-vstup-45-pruzina)
